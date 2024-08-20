@@ -1,63 +1,50 @@
 package edu.school21.service;
 
+import edu.school21.dao.AddressDAO;
 import edu.school21.dao.SupplierDAO;
-import edu.school21.dao.impl.SupplierDAOImpl;
-import edu.school21.exception.DAOException;
+import edu.school21.exception.EntityNotFoundException;
 import edu.school21.model.Address;
 import edu.school21.model.Supplier;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class SupplierService {
 
   private final SupplierDAO supplierDAO;
+  private final AddressDAO addressDAO;
 
   @Autowired
-  public SupplierService(SupplierDAOImpl supplierDAO) {
+  public SupplierService(SupplierDAO supplierDAO, AddressDAO addressDAO) {
     this.supplierDAO = supplierDAO;
+    this.addressDAO = addressDAO;
   }
 
-  public void addSupplier(Supplier supplier) {
-    try {
-      supplierDAO.save(supplier);
-    } catch (DAOException e) {
-      throw new RuntimeException(e);
-    }
+  public void add(Supplier supplier) {
+    supplierDAO.add(supplier);
   }
 
-  public void updateSupplier(UUID id, Address address) {
-    try {
-      supplierDAO.update(id, address);
-    } catch (DAOException e) {
-      throw new RuntimeException(e);
+  public Supplier getById(UUID id) {
+    Optional<Supplier> Supplier = supplierDAO.getById(id);
+    if (Supplier.isPresent()) {
+      return Supplier.get();
     }
+    throw new EntityNotFoundException("Supplier not found");
   }
 
-  public void deleteSupplier(UUID id) {
-    try {
-      supplierDAO.delete(id);
-    } catch (DAOException e) {
-      throw new RuntimeException(e);
-    }
+  public List<Supplier> getAll() {
+    return supplierDAO.getAll();
   }
 
-  public List<Supplier> getAllSuppliers() {
-    try {
-      return supplierDAO.findAll();
-    } catch (DAOException e) {
-      throw new RuntimeException(e);
-    }
+  public void update(UUID id, Address address) {
+    supplierDAO.update(id, address);
   }
 
-  public Supplier getSupplier(UUID id) {
-    try {
-      return supplierDAO.findById(id);
-    } catch (DAOException e) {
-      throw new RuntimeException(e);
-    }
+  public void delete(UUID id) {
+    supplierDAO.delete(id);
   }
 
 }

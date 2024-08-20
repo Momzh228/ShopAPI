@@ -3,6 +3,7 @@ package edu.school21.dao.impl;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.school21.dao.SupplierDAO;
 import edu.school21.exception.DAOException;
+import edu.school21.exception.EntityNotFoundException;
 import edu.school21.model.Address;
 import edu.school21.model.Supplier;
 import java.sql.Connection;
@@ -11,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,25 +30,71 @@ public class SupplierDAOImpl implements SupplierDAO {
   }
 
   @Override
-  public void save(Supplier supplier) throws DAOException {
-    try (Connection connection = dataSource.getConnection()) {
-      PreparedStatement statement = connection.prepareStatement(
-          "INSERT INTO suppliers (id, name, address_id, phone_number) VALUES (?,?,?,?)");
+  public void add(Supplier supplier) {
+    String sql = "INSERT INTO suppliers (id, name, address_id, phone_number) VALUES (?,?,?,?)";
+    try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
+        sql)) {
       statement.setObject(1, supplier.getId());
       statement.setString(2, supplier.getName());
-      statement.setObject(3, supplier.getAddress_id());
-      statement.setString(4, supplier.getPhone_number());
-      statement.executeUpdate();
-      statement.close();
+      statement.setObject(3, supplier.getAddressId());
+      statement.setString(4, supplier.getPhoneNumber());
+      int affectedRows = statement.executeUpdate();
+      if (affectedRows == 0) {
+        throw new EntityNotFoundException("Suppier not found");
+      }
     } catch (SQLException e) {
       throw new DAOException(e.getMessage());
     }
   }
 
   @Override
-  public void update(UUID id, Address newAddress) throws DAOException {
+  public List<Supplier> getAll() {
+    List<Supplier> suppliers = new ArrayList<>();
+    String sql = "SELECT * FROM suppliers";
+    try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
+        sql); ResultSet resultSet = statement.executeQuery()) {
+      while (resultSet.next()) {
+        Supplier supplier = buildSupplier(resultSet);
+        suppliers.add(supplier);
+      }
+    } catch (SQLException e) {
+      throw new DAOException(e.getMessage());
+    }
+    return suppliers;
+  }
+
+  @Override
+  public Optional<Supplier> getById(UUID id) {
+    String sql = "SELECT * FROM suppliers WHERE id = ?";
+    try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
+        sql)) {
+      statement.setObject(1, id);
+      ResultSet resultSet = statement.executeQuery();
+      if (resultSet.next()) {
+        Supplier supplier = buildSupplier(resultSet);
+        return Optional.of(supplier);
+      }
+      resultSet.close();
+    } catch (SQLException e) {
+      throw new DAOException(e.getMessage());
+    }
+    return Optional.empty();
+  }
+
+  private Supplier buildSupplier(ResultSet resultSet) throws SQLException {
+    Supplier supplier = new Supplier();
+    supplier.setId(resultSet.getObject("id", UUID.class));
+    supplier.setName(resultSet.getString("name"));
+    supplier.setAddressId(resultSet.getObject("address_id", UUID.class));
+    supplier.setPhoneNumber(resultSet.getString("phone_number"));
+    return supplier;
+  }
+
+  @Override
+  public void update(UUID id, Address newAddress) {
+    String sql = "UPDATE address SET id = ?, country = ?, city = ?, street = ? WHERE id = ?";
     try (Connection connection = dataSource.getConnection(); PreparedStatement statementAddress = connection.prepareStatement(
-        "UPDATE address SET id = ?, country = ?, city = ?, street = ? WHERE id = ?")) {
+        sql)) {
       statementAddress.setObject(1, newAddress.getId());
       statementAddress.setString(2, newAddress.getCountry());
       statementAddress.setString(3, newAddress.getCity());
@@ -57,67 +105,29 @@ public class SupplierDAOImpl implements SupplierDAO {
           "UPDATE suppliers SET address_id = ? WHERE id = ?")) {
         statementSupplier.setObject(1, newAddress.getId());
         statementSupplier.setObject(2, id);
-        statementSupplier.executeUpdate();
+        int affectedRows = statementSupplier.executeUpdate();
+        if (affectedRows == 0) {
+          throw new EntityNotFoundException("Suppier not found");
+        }
       }
     } catch (SQLException e) {
       throw new DAOException(e.getMessage());
     }
-
   }
 
   @Override
-  public void delete(UUID id) throws DAOException {
+  public void delete(UUID id) {
+    String sql = "DELETE FROM suppliers WHERE id = ?";
     try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
-        "DELETE FROM suppliers WHERE id = ?");) {
+        sql)) {
       statement.setObject(1, id);
-      statement.executeUpdate();
+      int affectedRows = statement.executeUpdate();
+      if (affectedRows == 0) {
+        throw new EntityNotFoundException("Suppier not found");
+      }
     } catch (SQLException e) {
       throw new DAOException(e.getMessage());
     }
   }
 
-  @Override
-  public List<Supplier> findAll() throws DAOException {
-    List<Supplier> suppliers = new ArrayList<>();
-    try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
-        "SELECT * FROM suppliers"); ResultSet resultSet = statement.executeQuery()) {
-      while (resultSet.next()) {
-        UUID id = resultSet.getObject("id", UUID.class);
-        String name = resultSet.getString("name");
-        UUID address = resultSet.getObject("address_id", UUID.class);
-        String phone_number = resultSet.getString("phone_number");
-        suppliers.add(new Supplier(id, name, address, phone_number));
-      }
-    } catch (SQLException e) {
-      throw new DAOException(e.getMessage());
-    }
-    return suppliers;
-  }
-
-  @Override
-  public Supplier findById(UUID id) throws DAOException {
-    Supplier supplier = new Supplier();
-    try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(
-        "SELECT * FROM suppliers WHERE id = ?")) {
-      statement.setObject(1, id);
-      ResultSet resultSet = statement.executeQuery();
-      if (!resultSet.next()) {
-        throw new DAOException("Supplier with id " + id + " not found");
-      }
-      while (resultSet.next()) {
-        UUID supplier_id = resultSet.getObject("id", UUID.class);
-        String name = resultSet.getString("name");
-        UUID address_id = resultSet.getObject("address_id", UUID.class);
-        String phone_number = resultSet.getString("phone_number");
-        supplier.setId(supplier_id);
-        supplier.setName(name);
-        supplier.setAddress_id(address_id);
-        supplier.setPhone_number(phone_number);
-      }
-      resultSet.close();
-    } catch (SQLException e) {
-      throw new DAOException(e.getMessage());
-    }
-    return supplier;
-  }
 }

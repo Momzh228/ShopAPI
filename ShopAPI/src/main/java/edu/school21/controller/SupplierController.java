@@ -1,12 +1,14 @@
 package edu.school21.controller;
 
 
-import edu.school21.model.Supplier;
 import edu.school21.model.Address;
+import edu.school21.model.Supplier;
 import edu.school21.service.SupplierService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,29 +29,29 @@ public class SupplierController {
     this.supplierService = supplierService;
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<Supplier> getSupplier(@PathVariable UUID id) {
+    return new ResponseEntity<>(supplierService.getById(id), HttpStatus.OK);
+  }
+
+  @GetMapping()
+  public ResponseEntity<List<Supplier>> getAllSupplier() {
+    return new ResponseEntity<>(supplierService.getAll(), HttpStatus.OK);
+  }
+
   @PostMapping
   public void createSupplier(@RequestBody Supplier supplier) {
-    supplierService.addSupplier(supplier);
+    supplierService.add(supplier);
   }
 
   @PatchMapping("/{id}")
   public void updateSupplier(@PathVariable UUID id, @RequestBody Address address) {
-    supplierService.updateSupplier(id, address);
+    supplierService.update(id, address);
   }
 
   @DeleteMapping("/{id}")
   public void deleteSupplier(@PathVariable UUID id) {
-    supplierService.deleteSupplier(id);
-  }
-
-  @GetMapping()
-  public List<Supplier> getAllSupplier() {
-    return supplierService.getAllSuppliers();
-  }
-
-  @GetMapping("/{id}")
-  public Supplier getSupplier(@PathVariable UUID id) {
-    return supplierService.getSupplier(id);
+    supplierService.delete(id);
   }
 
 }

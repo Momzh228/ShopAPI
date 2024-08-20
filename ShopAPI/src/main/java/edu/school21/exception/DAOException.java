@@ -1,10 +1,9 @@
 package edu.school21.exception;
 
-public class DAOException extends Exception {
+import lombok.Getter;
 
-  public DAOException() {
-    super();
-  }
+@Getter
+public class DAOException extends RuntimeException {
 
   public DAOException(String message) {
     super(message);

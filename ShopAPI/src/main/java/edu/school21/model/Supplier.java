@@ -14,7 +14,7 @@ public class Supplier {
 
   private UUID id;
   private String name;
-  private UUID address_id;
-  private String phone_number;
+  private UUID addressId;
+  private String phoneNumber;
 
 }

@@ -17,9 +17,9 @@ public class Product {
   private String name;
   private Category category;
   private Double price;
-  private Integer available_stock;
-  private LocalDate last_update_date;
-  private UUID supplier_id;
-  private UUID image_id;
+  private Integer availableStock;
+  private LocalDate lastUpdateDate;
+  private UUID supplierId;
+  private UUID imageId;
 
 }

@@ -30,11 +30,11 @@ public class ClientRepositoryImpl implements ClientRepository {
       String sql = "INSERT INTO clients VALUES (?, ?, ?, ?, ?, ?, ?)";
       PreparedStatement preparedStatement = connection.prepareStatement(sql);
 //      preparedStatement.se
-      preparedStatement.setString(2, client.getClient_name());
-      preparedStatement.setString(3, client.getClient_surname());
+      preparedStatement.setString(2, client.getClientName());
+      preparedStatement.setString(3, client.getClientSurname());
       preparedStatement.setDate(4, Date.valueOf(client.getBirthday()));
 //      preparedStatement.set
-      preparedStatement.setDate(5, Date.valueOf(client.getRegistration_date()));
+      preparedStatement.setDate(5, Date.valueOf(client.getRegistrationDate()));
 //      preparedStatement.set
     } catch (SQLException e) {
       e.printStackTrace();

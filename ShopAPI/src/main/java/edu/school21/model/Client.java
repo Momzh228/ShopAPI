@@ -14,10 +14,10 @@ import lombok.Setter;
 public class Client {
 
   private UUID id;
-  private String client_name;
-  private String client_surname;
+  private String clientName;
+  private String clientSurname;
   private LocalDate birthday;
   private Gender gender;
-  private LocalDate registration_date;
-  private UUID address_id;
+  private LocalDate registrationDate;
+  private UUID addressId;
 }
