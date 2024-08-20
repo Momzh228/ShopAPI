@@ -1,6 +1,5 @@
 package edu.school21.dao;
 
-import edu.school21.dto.ClientGetDTO;
 import edu.school21.model.Client;
 import java.util.List;
 import java.util.UUID;

@@ -2,7 +2,6 @@ package edu.school21.dao.impl;
 
 import com.zaxxer.hikari.HikariDataSource;
 import edu.school21.dao.ClientDAO;
-import edu.school21.dto.ClientGetDTO;
 import edu.school21.exception.DAOException;
 import edu.school21.exception.EntityNotFoundException;
 import edu.school21.model.Client;
